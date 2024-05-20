@@ -1,23 +1,15 @@
-import logo from './logo.svg';
 import './App.css';
+
+import rock from "./images/rock-removebg-preview.png"
+import paper from "./images/paper.png"
+import scissors from "./images/scissors.png"
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <img className='border rounded-full' src={rock} alt="" />
+      <img src={paper} alt="" />
+      <img src={scissors} alt="" />
     </div>
   );
 }
