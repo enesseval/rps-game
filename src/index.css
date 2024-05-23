@@ -7,3 +7,7 @@ body {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.btn{
+  @apply hover:border
+}
