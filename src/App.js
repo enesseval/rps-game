@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useState } from "react";
 import "./App.css";
 import rock from "./images/rock.png";
 import paper from "./images/paper.png";
@@ -10,7 +9,9 @@ function App() {
   const [currentImage, setCurrentImage] = useState(null);
   const [playerChoice, setPlayerChoice] = useState(null);
   const [computerChoice, setComputerChoice] = useState(null);
-  const [winner, setWinner] = useState(null)
+  const [winner, setWinner] = useState(null);
+  const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
 
   const choices = [
     { name: "rock", image: rock },
@@ -18,78 +19,83 @@ function App() {
     { name: "scissors", image: scissors },
   ];
 
-  const selectWinner = (choice) => {
-    console.log("choicename",choice.name);
-    console.log("playerchoice",playerChoice);
-    console.log("computerchoice",computerChoice?.name);
+  const handleClick = (choice) => {
+    setPlayerChoice(choice);
+    setIsSpinning(true);
+    setComputerChoice(null);
+    setWinner(null);
 
-    if(playerChoice === computerChoice.name){
-      setWinner("It's a Tie..!")
-    }else if(
+    let index = 0;
+    const spinInterval = setInterval(() => {
+      setCurrentImage(choices[index].image);
+      index = (index + 1) % choices.length;
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      setIsSpinning(false);
+      const randomChoice = choices[Math.floor(Math.random() * choices.length)];
+      setComputerChoice(randomChoice);
+      setCurrentImage(randomChoice.image);
+      determineWinner(choice, randomChoice);
+    }, 3000);
+  };
+
+  const determineWinner = (playerChoice, computerChoice) => {
+    let newScore = score;
+    if (playerChoice.name === computerChoice.name) {
+      setWinner("Berabere!");
+    } else if (
       (playerChoice.name === "rock" && computerChoice.name === "scissors") ||
       (playerChoice.name === "paper" && computerChoice.name === "rock") ||
       (playerChoice.name === "scissors" && computerChoice.name === "paper")
-    ){
-      setWinner("Computer wins!");
+    ) {
+      setWinner("Sen kazandın!");
+      newScore += 1;
     } else {
-      setWinner("You win!");
+      setWinner("Bilgisayar kazandı!");
+      newScore -= 1;
     }
-  }
 
-  const handleClick = (choice) => {
-    setIsSpinning(true);
-    setPlayerChoice(choice)
+    setScore(newScore);
+
+    if (newScore === 3) {
+      setGameOver(true);
+    } else if (newScore === -3) {
+      setGameOver(true);
+    }
   };
 
-  useEffect(() => {
-    let interval;
-    if (isSpinning) {
-      let index = 0;
-      interval = setInterval(() => {
-        setCurrentImage(choices[index].image);
-        index = (index + 1) % choices.length;
-      }, 100); // 100ms aralıklarla resimleri değiştir
-    }
-
-    return () => clearInterval(interval);
-  }, [isSpinning]);
-
-  useEffect(() => {
-    if (isSpinning) {
-      const timer = setTimeout(() => {
-        setIsSpinning(false);
-        const randomChoice = choices[Math.floor(Math.random() * choices.length)];
-        setComputerChoice(randomChoice);
-        setCurrentImage(randomChoice.image);
-        selectWinner(randomChoice)
-      }, 3000); // 3 saniye sonra durdur
-
-      return () => clearTimeout(timer);
-    }
-  }, [isSpinning, playerChoice]);
+  const resetGame = () => {
+    setPlayerChoice(null);
+    setComputerChoice(null);
+    setWinner(null);
+    setCurrentImage(null);
+    setScore(0);
+    setGameOver(false);
+  };
 
   return (
     <div className="contain w-full h-screen">
       <div className="flex justify-center">
-        <h1 className="mt-10 font-semibold text-3xl">
-          Rock Paper Scissors Game
-        </h1>
+        <h1 className="mt-10 font-semibold text-3xl">Taş Kağıt Makas Oyunu</h1>
       </div>
-      <div className="grid grid-cols-3 mt-5  xl:w-9/12 m-auto">
-        {choices.map((choice) => (
-          <div className="flex justify-center p-3 lg:p-0">
+      <div className="grid grid-cols-3 mt-5 xl:w-9/12 m-auto">
+        {choices.map((choice, ix) => (
+          <div key={ix} className="flex justify-center p-3 lg:p-0">
             <button
-              onClick={() => {
-                handleClick(choice.name);
-              }}
-              className="btn rounded-circle max-w-96"
+              onClick={() => handleClick(choice)}
+              className={`btn rounded-circle max-w-96 ${
+                playerChoice?.name === choice.name ? "border-gray-900 border-2" : ""
+              }`}
+              disabled={isSpinning || gameOver}
             >
               <img src={choice.image} alt={choice.name} />
             </button>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-3 mt-5  xl:w-6/12 m-auto">
+      <div className="grid grid-cols-3 mt-5 xl:w-6/12 m-auto">
         <div className="flex justify-center p-3 lg:p-0"></div>
         <div className="flex justify-center items-center p-3 lg:p-0">
           {!currentImage ? (
@@ -102,9 +108,18 @@ function App() {
         </div>
         <div className="flex justify-center p-3 lg:p-0"></div>
       </div>
-      <div className="flex justify-center"></div>
-      <div className="flex justify-center mt-5">
+      <div className="flex justify-center mt-2">
         <h1 className="font-bold text-4xl">{winner}</h1>
+      </div>
+      <div className="flex justify-center mt-2">
+        <h2 className="font-bold text-2xl">Skor: {score}</h2>
+      </div>
+      <div className="flex justify-center mt-2">
+        {gameOver && (
+          <button onClick={resetGame} className="btn bg-blue-500 text-white p-2 rounded">
+            Oyunu Yeniden Başlat
+          </button>
+        )}
       </div>
     </div>
   );
